@@ -1,6 +1,7 @@
 # Choisir aléatoirement une case vide
 import random
-from interface import 
+from interface import grid 
+
 class Fish:
     def __init__(self, x : int , y: int , reproduction_time, Alive : bool,):
         """
@@ -36,17 +37,17 @@ class Fish:
         - empty_cells est une liste de positions (x, y)
         - Si aucune case vide, il ne bouge pas
         """
-        if empty:
+        if grid.empty(self.x, self.y) == []:
             new_position = random.choice(empty)
             self.x, self.y = new_position  # Met à jour la position du poisson
     
     def choose_direction(self):
-    direction = randint(0, 1)  # Choisit aléatoirement 0 (horizontal) ou 1 (vertical)
-    sign = 2 * randint(0, 1) - 1  # Génère -1 ou +1 (c’est le sens du déplacement)
-    if direction == 0:
-        return (sign, 0)  # Déplacement horizontal : à gauche ou à droite
-    else:
-        return (0, sign)  # Déplacement vertical : en haut ou en bas
+        direction = randint(0, 1)  # Choisit aléatoirement 0 (horizontal) ou 1 (vertical)
+        sign = 2 * randint(0, 1) - 1  # Génère -1 ou +1 (c’est le sens du déplacement)
+        if direction == 0:
+            return (sign, 0)  # Déplacement horizontal : à gauche ou à droite
+        else:
+            return (0, sign)  # Déplacement vertical : en haut ou en bas
 
 
     def Position(self):
