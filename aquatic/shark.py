@@ -5,7 +5,7 @@ class Shark(Fish):
     compteur_id_requin = 0
 
     def __init__(self, shark_energy: int = 15, shark_reproduction_time: int = 0, shark_starvation_time: int = 0):
-        super().__init__()
+        super().__init__(0, 0, reproduction_time = 0 ,Alive= True)
         self.id = Shark.compteur_id_requin
         Shark.compteur_id_requin += 1
         self.shark_energy = shark_energy
