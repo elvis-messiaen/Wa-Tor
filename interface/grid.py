@@ -25,12 +25,17 @@ class Grid:
             else:
                 self.grid[row][col] = Fish(x=row, y=col, reproduction_time=5, Alive=True)
 
-    def empty(self):
+    def empty(self, pos_x=None, pos_y=None):
+        if pos_x is not None and pos_y is not None:
+            if 0 <= pos_x < len(self.grid) and 0 <= pos_y < len(self.grid[0]):
+                cell = self.grid[pos_x][pos_y]
+                return "vide" if cell == "" else cell
+            else:
+                return "Coordonnées invalides"
+        result = []
         for row_index, row in enumerate(self.grid):
             for col_index, cell in enumerate(row):
-                print(f"Cell[{row_index}][{col_index}] : '{cell}'")
-
-# grid_instance = Grid(20, 20)
-# grid_instance.creat()
-# grid_instance.populate_grid()
-# grid_instance.empty()
+                status = "vide" if cell == "" else cell
+                result.append(f"Cell[{row_index}][{col_index}] : {status}")
+    
+        return "\n".join(result)
