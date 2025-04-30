@@ -1,6 +1,6 @@
 # Choisir aléatoirement une case vide
-from random import randint
-from interface.grid import grid 
+#from random import randint
+#from interface.grid import grid 
 
 class Fish:
     def __init__(self, x : int , y: int , reproduction_time, alive : bool,):
