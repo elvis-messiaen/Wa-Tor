@@ -1,7 +1,7 @@
 import random
-
 from aquatic.fish import Fish
 from aquatic.shark import Shark
+
 class Grid:
     def __init__(self, point_x: int, point_y: int):
         self.point_x = point_x
@@ -25,21 +25,19 @@ class Grid:
             else:
                 self.grid[row][col] = Fish(x=row, y=col, reproduction_time=5, Alive=True)
 
-    def empty(self, pos_x, pos_y):
-        if 0 <= pos_x < len(self.grid) and 0 <= pos_y < len(self.grid[0]):
-            cell = self.grid[pos_x][pos_y]
-            if cell == "":
-                return "vide"
-            elif cell == "Fish":
-                return "Fish"
-            elif cell == "Shark":
-                return "Shark"
+    def empty(self, pos_x=None, pos_y=None):
+        if pos_x is not None and pos_y is not None:
+            if 0 <= pos_x < len(self.grid) and 0 <= pos_y < len(self.grid[0]):
+                cell = self.grid[pos_x][pos_y]
+                return "vide" if cell == "" else cell
             else:
-                return f"'{cell}'"
-        else:
-            return "Coordonnées invalides"
-
-
-
+                return "Coordonnées invalides"
+        result = []
+        for row_index, row in enumerate(self.grid):
+            for col_index, cell in enumerate(row):
+                status = "vide" if cell == "" else cell
+                result.append(f"Cell[{row_index}][{col_index}] : {status}")
+    
+        return "\n".join(result)
 
 
