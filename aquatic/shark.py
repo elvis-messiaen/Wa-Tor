@@ -6,8 +6,8 @@ class Shark(Fish):
 
     compteur_id_requin = 0
 
-    def __init__(self, grid, x: int, y: int, shark_energy: int = 15, shark_reproduction_time: int = 0, shark_starvation_time: int = 0) -> None:
-        super().__init__(x, y, reproduction_time=0, alive=True)
+    def __init__(self, grid, x, y, shark_energy=15, shark_reproduction_time=0, shark_starvation_time=0, alive=True):
+        super().__init__(x, y, reproduction_time=shark_reproduction_time, alive=alive)
         self.grid = grid
         self.age = 0
         self.id = Shark.compteur_id_requin

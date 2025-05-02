@@ -1,28 +1,17 @@
-# Choisir aléatoirement une case vide
-#from random import randint
-#from interface.grid import grid 
-
 class Fish:
-    def __init__(self, x : int , y: int , reproduction_time, alive : bool,):
-        """
-        Initialise un poisson avec :
-        - sa position (x, y)
-        - un compteur d'âge (initialisé à 0)
-        - un temps de reproduction requis
-        """
-        self.x = x  # Coordonnée horizontale dans la grille
-        self.y = y  # Coordonnée verticale dans la grille
-        self.age = 0  # Nombre de chronons écoulés depuis la naissance
-        self.reproduction_time = reproduction_time  # Chronons nécessaires avant reproduction
+    def __init__(self, x, y, reproduction_time, alive=True):
+        self.x = x
+        self.y = y
+        self.reproduction_time = reproduction_time
         self.alive = alive
+        self.age = 0
         
     def die(self):
         """
         Marque le poisson comme mort. 
-        Vous pouvez définir un drapeau ou le retirer de la grille ailleurs.
+        (ne modifie pas la grille ici)
         """
-        self.alive = False  # Ajoutez un attribut self.alive dans __init__
-        grid[self.x][self.y] = None  # On l’enlève de la grille
+        self.alive = False  # Marque le poisson comme mort
         
     def step(self):
         """
@@ -30,7 +19,6 @@ class Fish:
         """
         self.age += 1
     
-
     def reproduce(self):
         """
         Crée un nouveau poisson (reproduction).
@@ -70,5 +58,3 @@ class Fish:
         Représentation visuelle du poisson (utilisée lors de l'affichage de la grille).
         """
         return "🐟"
-    
-    
