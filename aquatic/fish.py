@@ -8,51 +8,49 @@ class Fish:
         self.age = 0
         
     def die(self):
-        """
-        Marque le poisson comme mort. 
-        (ne modifie pas la grille ici)
-        """
-        self.alive = False  # Marque le poisson comme mort
+        self.alive = False
         
     def step(self):
-        """
-        - Le poisson vieillit d'un tour(chronon).
-        """
         self.age += 1
     
     def reproduce(self):
-        """
-        Crée un nouveau poisson (reproduction).
-        Le parent garde sa position mais son âge est remis à zéro.
-        Le nouveau poisson sera placé ailleurs (à définir à l’extérieur).
-        """
-        self.age = 0  # Réinitialise l'âge du parent après reproduction
-        return Fish(self.x, self.y, self.reproduction_time)  # Bébé poisson à même position (à ajuster ensuite)
+        self.age = 0
+        return Fish(self.x, self.y, self.reproduction_time)
     
     def move(self, grid):
-        """
-        Déplace le poisson vers une case vide disponible autour de lui.
-        - empty_cells est une liste de positions (x, y)
-        - Si aucune case vide, il ne bouge pas
-        """
-        empty_cells = grid.empty(self.x, self.y)  # Récupère les cases vides autour du poisson
+        empty_cells = grid.empty(self.x, self.y)
         if empty_cells:
-            self.x, self.y = random.choice(empty_cells)  # Choisit une case vide aléatoire parmi celles disponibles
+            self.x, self.y = random.choice(empty_cells)
             
-    def get_empty_neighbors(grid, x, y): # Move to fish.py
+    def get_empty_neighbors(self, grid, x, y):
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
         return [(nx, ny) for dx, dy in directions
-            if 0 <= (nx := x + dx) < len(grid) and 0 <= (ny := y + dy) < len(grid[0])
-            and grid[nx][ny] is None]
+                if 0 <= (nx := x + dx) < grid.point_x and 0 <= (ny := y + dy) < grid.point_y
+                and grid.cells[nx][ny] is None]
     
     def position(self):
-        """
-        Retourne la position actuelle du poisson (utile pour la grille).
-        """
         return (self.x, self.y)
     
-    def __str__(self):
+    def handle_fish(self, grid, x, y, already_moved):
+        self.step()
+        empty = self.get_empty_neighbors(grid, x, y)
+        if empty:
+            nx, ny = random.choice(empty)
+            self.move_entity(grid, x, y, nx, ny, already_moved)  # Corrected to use grid as parameter
+
+        if self.age >= self.reproduction_time:
+            self.reproduce_entity(grid, x, y)
+    
+    def move_entity(self, grid, x, y, nx, ny, already_moved):  # Accepting grid as parameter
         """
-        Représentation visuelle du poisson (utilisée lors de l'affichage de la grille).
+        Déplace l'entité sur la grille.
         """
-        return "🐟"
+        grid.cells[nx][ny] = grid.cells[x][y]  # Corrected: Use grid to modify the cells
+        grid.cells[x][y] = None
+        already_moved.add((nx, ny))
+
+    def reproduce_entity(self, grid, x, y):
+        empty = self.get_empty_neighbors(grid, x, y)
+        if empty:
+            nx, ny = random.choice(empty)
+            grid.cells[nx][ny] = Fish(nx, ny, self.reproduction_time)
