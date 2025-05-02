@@ -71,9 +71,9 @@ def simulate_step(info_label): # Move to grid.py
     draw_grid_emojis()
     update_info(info_label)
 
-def handle_shark(entity, x, y, already_moved):
+def handle_shark(entity, x, y, already_moved): # Move to shark.py
     entity.step()
-    fish_neighbors = get_fish_neighbors(grid_instance.cells, x, y)
+    fish_neighbors = grid_instance.get_fish_neighbors(x, y)
     if fish_neighbors:
         nx, ny = random.choice(fish_neighbors)
         entity.eat(grid_instance.cells[nx][ny])
@@ -89,7 +89,7 @@ def handle_shark(entity, x, y, already_moved):
     elif entity.age >= entity.shark_reproduction_time:
         reproduce_entity(entity, x, y)
 
-def handle_fish(entity, x, y, already_moved):
+def handle_fish(entity, x, y, already_moved): # Move to fish.py
     entity.step()
     empty = get_empty_neighbors(grid_instance.cells, x, y)
     if empty:
@@ -99,13 +99,13 @@ def handle_fish(entity, x, y, already_moved):
     if entity.age >= entity.reproduction_time:
         reproduce_entity(entity, x, y)
 
-def move_entity(entity, x, y, nx, ny, already_moved):
+def move_entity(entity, x, y, nx, ny, already_moved): # Move to grid.py
     grid_instance.cells[nx][ny] = entity
     grid_instance.cells[x][y] = None
     entity.x, entity.y = nx, ny
     already_moved.add((nx, ny))
 
-def reproduce_entity(entity, x, y):
+def reproduce_entity(entity, x, y): # Move to grid.py
     baby = entity.reproduce()
     if baby:
         baby.grid = grid_instance
@@ -115,12 +115,12 @@ def reproduce_entity(entity, x, y):
             baby.x, baby.y = bx, by
             grid_instance.cells[bx][by] = baby
 
-def run_simulation(root, button, info_label):
+def run_simulation(root, button, info_label): # Move to grid.py
     if simulation_running:
         simulate_step(info_label)
         root.after(500, run_simulation, root, button, info_label)
 
-def toggle_simulation(root, button, info_label):
+def toggle_simulation(root, button, info_label): # Move to grid.py
     global simulation_running
     simulation_running = not simulation_running
     if simulation_running:
@@ -129,7 +129,7 @@ def toggle_simulation(root, button, info_label):
     else:
         button.config(text="Lancer")
 
-def main():
+def main(): # Move to grid.py
     initialize_entities()
     global cell_labels
 
