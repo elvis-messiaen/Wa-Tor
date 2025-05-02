@@ -1,3 +1,4 @@
+import random
 class Fish:
     def __init__(self, x, y, reproduction_time, alive=True):
         self.x = x
@@ -37,16 +38,13 @@ class Fish:
         empty_cells = grid.empty(self.x, self.y)  # Récupère les cases vides autour du poisson
         if empty_cells:
             self.x, self.y = random.choice(empty_cells)  # Choisit une case vide aléatoire parmi celles disponibles
+            
+    def get_empty_neighbors(grid, x, y): # Move to fish.py
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+        return [(nx, ny) for dx, dy in directions
+            if 0 <= (nx := x + dx) < len(grid) and 0 <= (ny := y + dy) < len(grid[0])
+            and grid[nx][ny] is None]
     
-    def choose_direction(self):
-        direction = randint(0, 1)  # Choisit aléatoirement 0 (horizontal) ou 1 (vertical)
-        sign = 2 * randint(0, 1) - 1  # Génère -1 ou +1 (c’est le sens du déplacement)
-        if direction == 0:
-            return (sign, 0)  # Déplacement horizontal : à gauche ou à droite
-        else:
-            return (0, sign)  # Déplacement vertical : en haut ou en bas
-
-
     def position(self):
         """
         Retourne la position actuelle du poisson (utile pour la grille).

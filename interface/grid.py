@@ -26,7 +26,7 @@ class Grid:
                 r = random.random()
                 
                 if r < 0.1:  # 10% de chance de placer un poisson
-                    fish = Fish(x, y, reproduction_time=3, alive=True)
+                    fish = Fish(x, y), reproduction_time=3, alive=True)
                     self.cells[x][y] = fish  # Placement du poisson dans la grille
                     entities.append(fish)
                     print(f"Poisson ajouté à la position ({x}, {y})")  # Log pour les poissons
