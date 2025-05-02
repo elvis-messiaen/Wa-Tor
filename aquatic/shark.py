@@ -1,4 +1,5 @@
 import random
+
 from aquatic.fish import Fish
 
 class Shark(Fish):
@@ -21,7 +22,9 @@ class Shark(Fish):
         fish.die()  # Supprime le poisson de la grille en appelant die()
         self.shark_energy += 5  # Augmentation de l'énergie du requin après avoir mangé
 
+    
     def move(self) -> None:
+
         # Récupère toutes les cases vides autour de la position actuelle du requin
         empty_neighbors = self.grid.get_empty_neighbors(self.x, self.y)
         
@@ -38,6 +41,7 @@ class Shark(Fish):
             
             # Place le requin dans la nouvelle case de la grille
             self.grid.grid[self.x][self.y] = self
+
 
     def step(self):
         """Le requin fait un tour. Il perd de l'énergie et vieillit."""
@@ -70,6 +74,7 @@ class Shark(Fish):
                 self.eat(target_fish)
                 self.x, self.y = target_fish.x, target_fish.y
 
+
     def get_empty_neighbors(self):
         """Retourne les cases vides autour de la position actuelle du requin."""
         if self.grid is None:
@@ -82,3 +87,7 @@ class Shark(Fish):
             return []
         return [(nx, ny) for nx, ny in self.grid.get_neighbors(self.x, self.y)
                 if isinstance(self.grid.cells[nx][ny], Fish) and not isinstance(self.grid.cells[nx][ny], Shark)]
+
+    def __str__(self):
+        return "🦈"
+
