@@ -1,64 +1,60 @@
-import random
-
 class Fish:
-    def __init__(self, x: int, y: int, reproduction_time: int, alive: bool = True):
+    def __init__(self, x, y, reproduction_time, alive=True):
+        self.x = x
+        self.y = y
+        self.reproduction_time = reproduction_time
+        self.alive = alive
+        self.age = 0
+        
+    def die(self):
         """
-        Initialise un poisson avec :
-        - sa position (x, y)
-        - un âge initial de 0
-        - un temps de reproduction
-        - un état vivant ou mort
+        Marque le poisson comme mort. 
+        (ne modifie pas la grille ici)
         """
-        self.x = x                  # Position en X dans la grille
-        self.y = y                  # Position en Y dans la grille
-        self.age = 0                # Âge du poisson (en tours)
-        self.reproduction_time = reproduction_time  # Temps avant reproduction
-        self.alive = alive          # Le poisson est vivant
-
-    def die(self, grid):
-        """
-        Fait mourir le poisson (il disparaît de la grille).
-        """
-        self.alive = False                    # Marque le poisson comme mort
-        grid.grid[self.x][self.y] = None      # Enlève le poisson de la grille
-
+        self.alive = False  # Marque le poisson comme mort
+        
     def step(self):
         """
-        Le poisson vieillit d’un tour.
+        - Le poisson vieillit d'un tour(chronon).
         """
         self.age += 1
-
-    def move(self, grid):
-        """
-        Déplace le poisson dans une case vide autour de lui (s'il y en a).
-        """
-        voisins_vides = grid.get_empty_neighbors(self.x, self.y)
-
-        if not voisins_vides:
-            return  # Ne bouge pas si aucune case vide
-
-        new_position = random.choice(voisins_vides)  # Choisit une case vide au hasard
-
-        grid.grid[self.x][self.y] = None  # Vide sa case actuelle
-        self.x, self.y = new_position  # Met à jour la position
-        grid.grid[self.x][self.y] = self   # Place le poisson dans la nouvelle case
-
+    
     def reproduce(self):
         """
-        Reproduit un nouveau poisson si l’âge est suffisant.
-        Le poisson parent garde sa position et son âge est remis à zéro.
+        Crée un nouveau poisson (reproduction).
+        Le parent garde sa position mais son âge est remis à zéro.
+        Le nouveau poisson sera placé ailleurs (à définir à l’extérieur).
         """
-        self.age = 0  # Réinitialise l’âge du parent
-        return Fish(self.x, self.y, self.reproduction_time)  # Le nouveau poisson (à déplacer ailleurs)
+        self.age = 0  # Réinitialise l'âge du parent après reproduction
+        return Fish(self.x, self.y, self.reproduction_time)  # Bébé poisson à même position (à ajuster ensuite)
+    
+    def move(self, grid):
+        """
+        Déplace le poisson vers une case vide disponible autour de lui.
+        - empty_cells est une liste de positions (x, y)
+        - Si aucune case vide, il ne bouge pas
+        """
+        empty_cells = grid.empty(self.x, self.y)  # Récupère les cases vides autour du poisson
+        if empty_cells:
+            self.x, self.y = random.choice(empty_cells)  # Choisit une case vide aléatoire parmi celles disponibles
+    
+    def choose_direction(self):
+        direction = randint(0, 1)  # Choisit aléatoirement 0 (horizontal) ou 1 (vertical)
+        sign = 2 * randint(0, 1) - 1  # Génère -1 ou +1 (c’est le sens du déplacement)
+        if direction == 0:
+            return (sign, 0)  # Déplacement horizontal : à gauche ou à droite
+        else:
+            return (0, sign)  # Déplacement vertical : en haut ou en bas
+
 
     def position(self):
         """
-        Retourne la position actuelle du poisson.
+        Retourne la position actuelle du poisson (utile pour la grille).
         """
         return (self.x, self.y)
-
+    
     def __str__(self):
         """
-        Représentation du poisson quand on affiche la grille.
+        Représentation visuelle du poisson (utilisée lors de l'affichage de la grille).
         """
         return "🐟"
