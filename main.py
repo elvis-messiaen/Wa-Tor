@@ -11,19 +11,19 @@ simulation_running = False
 turn_count = 0
 cell_labels = []
 
-def get_fish_neighbors(grid, x, y):
+def get_fish_neighbors(grid, x, y): # Move to shark.py
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
     return [(nx, ny) for dx, dy in directions
             if 0 <= (nx := x + dx) < len(grid) and 0 <= (ny := y + dy) < len(grid[0])
             and isinstance(grid[nx][ny], Fish) and not isinstance(grid[nx][ny], Shark)]
 
-def get_empty_neighbors(grid, x, y):
+def get_empty_neighbors(grid, x, y): # Move to fish.py
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
     return [(nx, ny) for dx, dy in directions
             if 0 <= (nx := x + dx) < len(grid) and 0 <= (ny := y + dy) < len(grid[0])
             and grid[nx][ny] is None]
 
-def initialize_entities():
+def initialize_entities(): # Move to grid.py
     for x in range(width):
         for y in range(height):
             r = random.random()
@@ -35,7 +35,7 @@ def initialize_entities():
                 shark = Shark(grid=grid_instance, x=x, y=y, shark_energy=15, shark_reproduction_time=5, shark_starvation_time=5)
                 grid_instance.cells[x][y] = shark
 
-def count_entities():
+def count_entities(): # Move to grid.py
     fish_count = 0
     shark_count = 0
     for row in grid_instance.cells:
@@ -46,11 +46,11 @@ def count_entities():
                 fish_count += 1
     return fish_count, shark_count
 
-def update_info(label):
+def update_info(label): # Move to grid.py
     fish_count, shark_count = count_entities()
     label.config(text=f"Tour : {turn_count}   🐟 Poissons : {fish_count}   🦈 Requins : {shark_count}")
 
-def draw_grid_emojis():
+def draw_grid_emojis(): # Move to grid.py
     for x in range(width):
         for y in range(height):
             entity = grid_instance.cells[x][y]
@@ -62,7 +62,7 @@ def draw_grid_emojis():
                 emoji = "⬜"
             cell_labels[x][y].config(text=emoji)
 
-def simulate_step(info_label):
+def simulate_step(info_label): # Move to grid.py
     global turn_count
     already_moved = set()
 
