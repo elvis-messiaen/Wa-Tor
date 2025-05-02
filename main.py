@@ -11,21 +11,11 @@ simulation_running = False
 turn_count = 0
 cell_labels = []
 
+def initialize_entities():
+    """Initialise la grille en utilisant la méthode populate_grid()."""
+    return grid_instance.populate_grid()
 
-
-def initialize_entities(): # Move to grid.py
-    for x in range(width):
-        for y in range(height):
-            r = random.random()
-            if r < 0.1:
-                fish = Fish(x, y, reproduction_time=3)
-                fish.grid = grid_instance
-                grid_instance.cells[x][y] = fish
-            elif r < 0.2:
-                shark = Shark(grid=grid_instance, x=x, y=y, shark_energy=15, shark_reproduction_time=5, shark_starvation_time=5)
-                grid_instance.cells[x][y] = shark
-
-def count_entities(): # Move to grid.py
+def count_entities():  # Move to grid.py
     fish_count = 0
     shark_count = 0
     for row in grid_instance.cells:
@@ -36,11 +26,11 @@ def count_entities(): # Move to grid.py
                 fish_count += 1
     return fish_count, shark_count
 
-def update_info(label): # Move to grid.py
+def update_info(label):  # Move to grid.py
     fish_count, shark_count = count_entities()
     label.config(text=f"Tour : {turn_count}   🐟 Poissons : {fish_count}   🦈 Requins : {shark_count}")
 
-def draw_grid_emojis(): # Move to grid.py
+def draw_grid_emojis():  # Move to grid.py
     for x in range(width):
         for y in range(height):
             entity = grid_instance.cells[x][y]
@@ -52,20 +42,22 @@ def draw_grid_emojis(): # Move to grid.py
                 emoji = "⬜"
             cell_labels[x][y].config(text=emoji)
 
-def simulate_step(info_label): # Move to grid.py
+def simulate_step(info_label):  # Move to grid.py
     global turn_count
     already_moved = set()
 
-    for x in range(width):
-        for y in range(height):
-            entity = grid_instance.cells[x][y]
-            if entity is None or (x, y) in already_moved:
-                continue
+    entities = [grid_instance.cells[x][y] for x in range(width) for y in range(height) if isinstance(grid_instance.cells[x][y], (Shark, Fish))]
+    random.shuffle(entities)
 
-            if isinstance(entity, Shark):
-                handle_shark(entity, x, y, already_moved)
-            elif isinstance(entity, Fish):
-                handle_fish(entity, x, y, already_moved)
+    for entity in entities:
+        x, y = entity.x, entity.y
+        if (x, y) in already_moved:
+            continue
+
+        if isinstance(entity, Shark):
+            handle_shark(entity, x, y, already_moved)
+        elif isinstance(entity, Fish):
+            handle_fish(entity, x, y, already_moved)
 
     turn_count += 1
     draw_grid_emojis()
