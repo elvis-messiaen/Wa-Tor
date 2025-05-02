@@ -170,4 +170,4 @@ def main(): # Move to main.py
     root.mainloop()
 
 if __name__ == "__main__": # Entry point of the program
-    main()
+    main() 
