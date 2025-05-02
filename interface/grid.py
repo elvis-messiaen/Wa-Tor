@@ -42,9 +42,6 @@ class Grid:
 
         return entities  # Retourne la liste des entités
 
-
-
-
     def empty(self, x, y):
         """Vérifie si une case (x, y) est vide."""
         if 0 <= x < self.point_x and 0 <= y < self.point_y:
