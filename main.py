@@ -11,12 +11,6 @@ simulation_running = False
 turn_count = 0
 cell_labels = []
 
-def get_fish_neighbors(grid, x, y): # Move to shark.py
-    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-    return [(nx, ny) for dx, dy in directions
-            if 0 <= (nx := x + dx) < len(grid) and 0 <= (ny := y + dy) < len(grid[0])
-            and isinstance(grid[nx][ny], Fish) and not isinstance(grid[nx][ny], Shark)]
-
 def get_empty_neighbors(grid, x, y): # Move to fish.py
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
     return [(nx, ny) for dx, dy in directions

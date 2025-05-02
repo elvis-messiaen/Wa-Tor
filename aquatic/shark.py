@@ -45,3 +45,9 @@ class Shark(Fish):
             if target_fish.alive:
                 self.eat(target_fish)
                 self.x, self.y = target_fish.x, target_fish.y
+
+    def get_fish_neighbors(self, x, y):
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+        return [(nx, ny) for dx, dy in directions
+                if 0 <= (nx := x + dx) < len(self.grid) and 0 <= (ny := y + dy) < len(self.grid[0])
+                and isinstance(self.grid[nx][ny], Fish) and not isinstance(self.grid[nx][ny], Shark)]
