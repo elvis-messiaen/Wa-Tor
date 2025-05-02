@@ -1,5 +1,5 @@
 import random
-from random import randint
+# from random import randint : not used
 from aquatic.fish import Fish
 
 class Shark(Fish):
@@ -21,10 +21,25 @@ class Shark(Fish):
             self.shark_energy += 5
             fish.die()
 
+    
     def move(self) -> None:
-        empty_cells = self.grid.empty(self.x, self.y)
+    # Récupère toutes les cases vides autour de la position actuelle du requin
+        empty_cells = self.grid.get_empty_neighbors(self.x, self.y)
+    
+    # Vérifie s'il y a au moins une case vide disponible
         if empty_cells:
-            self.x, self.y = random.choice(empty_cells)
+            # Choisit aléatoirement une des cases vides autour
+            new_x, new_y = random.choice(empty_cells)
+        
+        # Vide l’ancienne case où se trouvait le requin dans la grille
+            self.grid.grid[self.x][self.y] = None
+        
+        # Met à jour les coordonnées internes du requin
+            self.x, self.y = new_x, new_y
+        
+        # Place le requin dans la nouvelle case de la grille
+            self.grid.grid[self.x][self.y] = self
+
 
     def step(self) -> None:
         self.age += 1
@@ -45,3 +60,6 @@ class Shark(Fish):
             if target_fish.alive:
                 self.eat(target_fish)
                 self.x, self.y = target_fish.x, target_fish.y
+
+def __str__(self):
+        return "🦈"
