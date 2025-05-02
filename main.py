@@ -11,11 +11,7 @@ simulation_running = False
 turn_count = 0
 cell_labels = []
 
-def get_empty_neighbors(grid, x, y): # Move to fish.py
-    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-    return [(nx, ny) for dx, dy in directions
-            if 0 <= (nx := x + dx) < len(grid) and 0 <= (ny := y + dy) < len(grid[0])
-            and grid[nx][ny] is None]
+
 
 def initialize_entities(): # Move to grid.py
     for x in range(width):
@@ -75,9 +71,9 @@ def simulate_step(info_label): # Move to grid.py
     draw_grid_emojis()
     update_info(info_label)
 
-def handle_shark(entity, x, y, already_moved): # Move to shark.py
+def handle_shark(entity, x, y, already_moved):
     entity.step()
-    fish_neighbors = entity.get_fish_neighbors(x, y)
+    fish_neighbors = get_fish_neighbors(grid_instance.cells, x, y)
     if fish_neighbors:
         nx, ny = random.choice(fish_neighbors)
         entity.eat(grid_instance.cells[nx][ny])
@@ -93,7 +89,7 @@ def handle_shark(entity, x, y, already_moved): # Move to shark.py
     elif entity.age >= entity.shark_reproduction_time:
         reproduce_entity(entity, x, y)
 
-def handle_fish(entity, x, y, already_moved): # Move to fish.py
+def handle_fish(entity, x, y, already_moved):
     entity.step()
     empty = get_empty_neighbors(grid_instance.cells, x, y)
     if empty:
@@ -103,13 +99,13 @@ def handle_fish(entity, x, y, already_moved): # Move to fish.py
     if entity.age >= entity.reproduction_time:
         reproduce_entity(entity, x, y)
 
-def move_entity(entity, x, y, nx, ny, already_moved): # Move to grid.py
+def move_entity(entity, x, y, nx, ny, already_moved):
     grid_instance.cells[nx][ny] = entity
     grid_instance.cells[x][y] = None
     entity.x, entity.y = nx, ny
     already_moved.add((nx, ny))
 
-def reproduce_entity(entity, x, y): # Move to fish.py
+def reproduce_entity(entity, x, y):
     baby = entity.reproduce()
     if baby:
         baby.grid = grid_instance
@@ -119,12 +115,12 @@ def reproduce_entity(entity, x, y): # Move to fish.py
             baby.x, baby.y = bx, by
             grid_instance.cells[bx][by] = baby
 
-def run_simulation(root, button, info_label): # Move to grid.py
+def run_simulation(root, button, info_label):
     if simulation_running:
         simulate_step(info_label)
         root.after(500, run_simulation, root, button, info_label)
 
-def toggle_simulation(root, button, info_label): # Move to grid.py
+def toggle_simulation(root, button, info_label):
     global simulation_running
     simulation_running = not simulation_running
     if simulation_running:
@@ -133,7 +129,7 @@ def toggle_simulation(root, button, info_label): # Move to grid.py
     else:
         button.config(text="Lancer")
 
-def main(): # Move to main.py
+def main():
     initialize_entities()
     global cell_labels
 
@@ -169,5 +165,5 @@ def main(): # Move to main.py
 
     root.mainloop()
 
-if __name__ == "__main__": # Entry point of the program
+if __name__ == "__main__":
     main()
