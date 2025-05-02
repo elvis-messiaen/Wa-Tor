@@ -9,13 +9,13 @@ grid_instance = Grid(width, height)
 grid_instance.create()
 simulation_running = False
 turn_count = 0
-cell_labels = []  # Grille de labels
+cell_labels = []
 
 def get_fish_neighbors(grid, x, y):
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
     return [(nx, ny) for dx, dy in directions
             if 0 <= (nx := x + dx) < len(grid) and 0 <= (ny := y + dy) < len(grid[0])
-            and isinstance(grid[nx][ny], Fish)]
+            and isinstance(grid[nx][ny], Fish) and not isinstance(grid[nx][ny], Shark)]
 
 def get_empty_neighbors(grid, x, y):
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
@@ -29,10 +29,10 @@ def initialize_entities():
             r = random.random()
             if r < 0.1:
                 fish = Fish(x, y, reproduction_time=3)
-                fish.grid = grid_instance  # 🔧 Lien vers la grille
+                fish.grid = grid_instance
                 grid_instance.cells[x][y] = fish
             elif r < 0.2:
-                shark = Shark(x=x, y=y, shark_energy=15, shark_reproduction_time=5, shark_starvation_time=5, grid=grid_instance, alive=True)
+                shark = Shark(grid=grid_instance, x=x, y=y, shark_energy=15, shark_reproduction_time=5, shark_starvation_time=5)
                 grid_instance.cells[x][y] = shark
 
 def count_entities():
@@ -40,10 +40,10 @@ def count_entities():
     shark_count = 0
     for row in grid_instance.cells:
         for cell in row:
-            if isinstance(cell, Fish):
-                fish_count += 1
-            elif isinstance(cell, Shark):
+            if isinstance(cell, Shark):
                 shark_count += 1
+            elif isinstance(cell, Fish):
+                fish_count += 1
     return fish_count, shark_count
 
 def update_info(label):
@@ -88,9 +88,15 @@ def handle_shark(entity, x, y, already_moved):
         nx, ny = random.choice(fish_neighbors)
         entity.eat(grid_instance.cells[nx][ny])
         move_entity(entity, x, y, nx, ny, already_moved)
+    else:
+        empty = get_empty_neighbors(grid_instance.cells, x, y)
+        if empty:
+            nx, ny = random.choice(empty)
+            move_entity(entity, x, y, nx, ny, already_moved)
+
     if entity.shark_energy <= 0:
-        grid_instance.cells[entity.x][entity.y] = ""
-    if entity.age >= entity.shark_reproduction_time:
+        grid_instance.cells[entity.x][entity.y] = None
+    elif entity.age >= entity.shark_reproduction_time:
         reproduce_entity(entity, x, y)
 
 def handle_fish(entity, x, y, already_moved):
@@ -99,6 +105,7 @@ def handle_fish(entity, x, y, already_moved):
     if empty:
         nx, ny = random.choice(empty)
         move_entity(entity, x, y, nx, ny, already_moved)
+
     if entity.age >= entity.reproduction_time:
         reproduce_entity(entity, x, y)
 
@@ -139,7 +146,6 @@ def main():
     root = tk.Tk()
     root.title("Simulation Wa-Tor (Emoji Edition)")
 
-    # Grille d'emojis
     grid_frame = tk.Frame(root)
     grid_frame.pack()
 
@@ -151,7 +157,6 @@ def main():
             row.append(lbl)
         cell_labels.append(row)
 
-    # Info + boutons
     info_label = tk.Label(root, text="", font=("Arial", 12))
     info_label.pack(pady=5)
 
