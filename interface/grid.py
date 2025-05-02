@@ -20,23 +20,30 @@ class Grid:
         """Réinitialiser la grille."""
         self.cells = [[None for _ in range(self.point_y)] for _ in range(self.point_x)]
 
-    def populate_grid(self, entities):
-        for x in range(self.point_x):
-            for y in range(self.point_y):
-                r = random.random()
-                
-                if r < 0.1:  # 10% de chance de placer un poisson
-                    fish = Fish(x, y, reproduction_time=3, alive=True)
-                    self.cells[x][y] = fish  # Placement du poisson dans la grille
-                    entities.append(fish)
-                    print(f"Poisson ajouté à la position ({x}, {y})")  # Log pour les poissons
-                    
-                elif r < 0.3:  # 20% de chance de placer un requin (augmentation de la probabilité)
-                    shark = Shark(x=x, y=y, shark_energy=15, shark_reproduction_time=5, shark_starvation_time=5, grid=self, alive=True)
-                    shark.grid = self
-                    self.cells[x][y] = shark  # Placement du requin dans la grille
-                    entities.append(shark)
-                    print(f"Requin ajouté à la position ({x}, {y})")  # Log pour les requins
+    def populate_grid(self):
+        """Remplit la grille avec des poissons et des requins."""
+        total_cells = self.point_x * self.point_y
+        num_sharks = int(total_cells * 0.1)
+        num_fish = int(total_cells * 0.7)   
+
+        positions = random.sample(range(total_cells), num_sharks + num_fish)
+        entities = []  # Liste pour stocker les entités     
+
+        for i, pos in enumerate(positions):
+            row, col = divmod(pos, self.point_y)
+            if i < num_sharks:
+                shark = Shark(grid=self, x=row, y=col, shark_energy=15, shark_reproduction_time=3, shark_starvation_time=5)
+                self.cells[row][col] = shark  # Remplacement de self.grid par self.cells
+                entities.append(shark)
+            else:
+                fish = Fish(x=row, y=col, reproduction_time=5, alive=True)
+                self.cells[row][col] = fish  # Remplacement de self.grid par self.cells
+                entities.append(fish)   
+
+        return entities  # Retourne la liste des entités
+
+
+
 
     def empty(self, x, y):
         """Vérifie si une case (x, y) est vide."""
@@ -82,3 +89,5 @@ class Grid:
                     row_rep += "? "  # Si la cellule contient autre chose
             grid_representation += row_rep + "\n"
         return grid_representation
+    
+
