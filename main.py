@@ -13,7 +13,7 @@ def initialize_entities():
     """Initialise la grille en utilisant la méthode populate_grid()."""
     return grid_instance.populate_grid()
 
-def main(): # Move to grid.py
+def main():
     initialize_entities()
     global cell_labels
 
@@ -23,6 +23,7 @@ def main(): # Move to grid.py
     grid_frame = tk.Frame(root)
     grid_frame.pack()
 
+    # Création des labels pour la grille
     for x in range(width):
         row = []
         for y in range(height):
@@ -31,24 +32,27 @@ def main(): # Move to grid.py
             row.append(lbl)
         cell_labels.append(row)
 
+    # Définition des labels dans la grille
+    grid_instance.set_cell_labels(cell_labels)
+
     info_label = tk.Label(root, text="", font=("Arial", 12))
     info_label.pack(pady=5)
 
     button_frame = tk.Frame(root)
     button_frame.pack(pady=5)
 
-    step_button = tk.Button(button_frame, text="Tour suivant", command=lambda: grid_instance.simulate_step(info_label)
-)
+    step_button = tk.Button(button_frame, text="Tour suivant", command=lambda: grid_instance.simulate_step(info_label))
     step_button.pack(side=tk.LEFT, padx=5)
 
     toggle_button = tk.Button(button_frame, text="Lancer")
     toggle_button.config(command=lambda: grid_instance.toggle_simulation(root, toggle_button, info_label))
     toggle_button.pack(side=tk.LEFT, padx=5)
 
+    # Mise à jour initiale de l'affichage
     grid_instance.draw_grid_emojis()
     grid_instance.update_info(info_label)
 
     root.mainloop()
 
-if __name__ == "__main__": # Entry point of the program
+if __name__ == "__main__":
     main() 

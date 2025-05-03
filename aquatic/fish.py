@@ -1,4 +1,5 @@
 import random
+
 class Fish:
     def __init__(self, x, y, reproduction_time, alive=True):
         self.x = x
@@ -36,16 +37,14 @@ class Fish:
         empty = self.get_empty_neighbors(grid, x, y)
         if empty:
             nx, ny = random.choice(empty)
-            self.move_entity(grid, x, y, nx, ny, already_moved)  # Corrected to use grid as parameter
+            self.move_entity(grid, x, y, nx, ny, already_moved)
 
         if self.age >= self.reproduction_time:
             self.reproduce_entity(grid, x, y)
     
-    def move_entity(self, grid, x, y, nx, ny, already_moved):  # Accepting grid as parameter
-        """
-        Déplace l'entité sur la grille.
-        """
-        grid.cells[nx][ny] = grid.cells[x][y]  # Corrected: Use grid to modify the cells
+    def move_entity(self, grid, x, y, nx, ny, already_moved):
+        """Déplace l'entité sur la grille."""
+        grid.cells[nx][ny] = grid.cells[x][y]
         grid.cells[x][y] = None
         already_moved.add((nx, ny))
 

@@ -20,7 +20,7 @@ class Shark(Fish):
             fish.die()
 
     def move(self) -> None:
-        empty_cells = self.grid.get_empty_neighbors(self.x, self.y)  # Utilisation de la méthode de la classe Grid
+        empty_cells = self.grid.get_empty_neighbors(self.x, self.y)
         if empty_cells:
             self.x, self.y = random.choice(empty_cells)
 
@@ -34,10 +34,12 @@ class Shark(Fish):
     def reproduce(self) -> 'Shark':
         if self.age >= self.shark_reproduction_time:
             self.age = 0
-            return Shark(self.grid, self.x, self.y, shark_energy=15, shark_reproduction_time=self.shark_reproduction_time, shark_starvation_time=self.shark_starvation_time)
+            return Shark(self.grid, self.x, self.y, shark_energy=15,
+                         shark_reproduction_time=self.shark_reproduction_time,
+                         shark_starvation_time=self.shark_starvation_time)
 
     def hunting(self) -> None:
-        fish_neighbors = self.get_fish_neighbors(self.x, self.y)  # Appel de la méthode get_fish_neighbors
+        fish_neighbors = self.get_fish_neighbors(self.x, self.y)
         if fish_neighbors:
             target_fish = random.choice(fish_neighbors)
             if target_fish.alive:
@@ -51,19 +53,19 @@ class Shark(Fish):
                 and isinstance(self.grid.cells[nx][ny], Fish)]
     
     def handle_shark(self, x, y, already_moved):
-        self.step()  # Effectue une étape pour le requin
-        fish_neighbors = self.get_fish_neighbors(x, y)  # Appel correct de get_fish_neighbors
+        self.step()
+        fish_neighbors = self.get_fish_neighbors(x, y)
         if fish_neighbors:
-            nx, ny = random.choice(fish_neighbors)  # Choix d'un poisson à manger
-            self.eat(self.grid.cells[nx][ny])  # Mange le poisson
-            self.move_entity(x, y, nx, ny, already_moved)  # Déplace le requin
+            nx, ny = random.choice(fish_neighbors)
+            self.eat(self.grid.cells[nx][ny])
+            self.grid.move_entity(self, x, y, nx, ny, already_moved)  # Correction : Ajout de `grid`
         else:
-            empty = self.get_empty_neighbors(self.grid, x, y)  # Recherche de cellules vides
+            empty = self.grid.get_empty_neighbors(x, y)
             if empty:
                 nx, ny = random.choice(empty)
-                self.move_entity(x, y, nx, ny, already_moved)
+                self.grid.move_entity(self, x, y, nx, ny, already_moved)  # Correction : Ajout de `grid`
 
         if self.shark_energy <= 0:
-            self.grid.cells[self.x][self.y] = None  # Le requin meurt s'il n'a plus d'énergie
+            self.grid.cells[self.x][self.y] = None
         elif self.age >= self.shark_reproduction_time:
-            self.reproduce_entity(x, y)  # Reproduction du requin
+            self.reproduce_entity(self.grid, x, y)  # Correction : Ajout de `grid`
