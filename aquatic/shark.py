@@ -1,9 +1,7 @@
 import random
-from random import randint
 from aquatic.fish import Fish
 
 class Shark(Fish):
-
     compteur_id_requin = 0
 
     def __init__(self, grid, x, y, shark_energy=15, shark_reproduction_time=0, shark_starvation_time=0, alive=True):
@@ -22,7 +20,7 @@ class Shark(Fish):
             fish.die()
 
     def move(self) -> None:
-        empty_cells = self.grid.empty(self.x, self.y)
+        empty_cells = self.grid.get_empty_neighbors(self.x, self.y)
         if empty_cells:
             self.x, self.y = random.choice(empty_cells)
 
@@ -36,10 +34,12 @@ class Shark(Fish):
     def reproduce(self) -> 'Shark':
         if self.age >= self.shark_reproduction_time:
             self.age = 0
-            return Shark(self.grid, self.x, self.y, shark_energy=15, shark_reproduction_time=self.shark_reproduction_time, shark_starvation_time=self.shark_starvation_time)
+            return Shark(self.grid, self.x, self.y, shark_energy=15,
+                         shark_reproduction_time=self.shark_reproduction_time,
+                         shark_starvation_time=self.shark_starvation_time)
 
     def hunting(self) -> None:
-        fish_neighbors = self.grid.get_fish_neighbors(self.x, self.y)
+        fish_neighbors = self.get_fish_neighbors(self.x, self.y)
         if fish_neighbors:
             target_fish = random.choice(fish_neighbors)
             if target_fish.alive:
@@ -49,5 +49,23 @@ class Shark(Fish):
     def get_fish_neighbors(self, x, y):
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
         return [(nx, ny) for dx, dy in directions
-                if 0 <= (nx := x + dx) < len(self.grid) and 0 <= (ny := y + dy) < len(self.grid[0])
-                and isinstance(self.grid[nx][ny], Fish) and not isinstance(self.grid[nx][ny], Shark)]
+                if 0 <= (nx := x + dx) < self.grid.point_x and 0 <= (ny := y + dy) < self.grid.point_y
+                and isinstance(self.grid.cells[nx][ny], Fish)]
+    
+    def handle_shark(self, x, y, already_moved):
+        self.step()
+        fish_neighbors = self.get_fish_neighbors(x, y)
+        if fish_neighbors:
+            nx, ny = random.choice(fish_neighbors)
+            self.eat(self.grid.cells[nx][ny])
+            self.grid.move_entity(self, x, y, nx, ny, already_moved)  # Correction : Ajout de `grid`
+        else:
+            empty = self.grid.get_empty_neighbors(x, y)
+            if empty:
+                nx, ny = random.choice(empty)
+                self.grid.move_entity(self, x, y, nx, ny, already_moved)  # Correction : Ajout de `grid`
+
+        if self.shark_energy <= 0:
+            self.grid.cells[self.x][self.y] = None
+        elif self.age >= self.shark_reproduction_time:
+            self.reproduce_entity(self.grid, x, y)  # Correction : Ajout de `grid`
