@@ -2,53 +2,66 @@ import random
 from aquatic.fish import Fish
 from aquatic.shark import Shark
 
-_grid_instance = None
-turn_count = 0
-simulation_running = False
+# Variables globales pour la gestion de la grille et de la simulation
+_grid_instance = None  # Instance unique de la grille (singleton)
+turn_count = 0  # Compteur de tours de simulation
+simulation_running = False  # État de la simulation (en cours ou arrêtée)
 
 def get_grid_instance(point_x=None, point_y=None):
+    """Retourne l'instance unique de la grille (pattern Singleton).
+    Si l'instance n'existe pas et que les dimensions sont fournies, crée une nouvelle instance."""
     global _grid_instance
     if _grid_instance is None and point_x is not None and point_y is not None:
         _grid_instance = Grid(point_x, point_y)
     return _grid_instance
 
 class Grid:
+    """Classe représentant la grille de simulation Wa-Tor."""
+    
     def __init__(self, point_x: int, point_y: int):
-        self.point_x = point_x
-        self.point_y = point_y
-        self.cells = [[None for _ in range(point_y)] for _ in range(point_x)]
-        self.cell_labels = None  # Initialisé à None, sera défini plus tard
-
-    def create(self):
-        """Initialise les cellules."""
-        self.cells = [[None for _ in range(self.point_y)] for _ in range(self.point_x)]
+        """Initialise la grille avec les dimensions spécifiées."""
+        self.point_x = point_x  # Largeur de la grille
+        self.point_y = point_y  # Hauteur de la grille
+        self.cells = [[None for _ in range(point_y)] for _ in range(point_x)]  # Grille 2D initialisée avec None
+        self.cell_labels = None  # Labels pour l'interface graphique
 
     def set_cell_labels(self, labels):
-        """Définit les labels de la grille."""
+        """Définit les labels de la grille pour l'interface graphique."""
         self.cell_labels = labels
 
     def populate_grid(self):
-        """Remplit la grille avec 10% de requins et 70% de poissons."""
+        """Remplit la grille avec des requins et des poissons selon des proportions définies."""
         total_cells = self.point_x * self.point_y
-        num_sharks = int(total_cells * 0.1)
-        num_fish = int(total_cells * 0.7)
-        positions = random.sample(range(total_cells), num_sharks + num_fish)
+        num_sharks = int(total_cells * 0.1)  # 10% de requins
+        num_fish = int(total_cells * 0.7)    # 70% de poissons
+        total_entities = num_sharks + num_fish
+        
+        # Création et mélange des positions possibles
+        all_positions = [(x, y) for x in range(self.point_x) for y in range(self.point_y)]
+        random.shuffle(all_positions)
+        
+        # Placement des requins
+        for i in range(num_sharks):
+            x, y = all_positions[i]
+            shark = Shark(grid=self, x=x, y=y, shark_energy=2, shark_reproduction_time=5)
+            self.cells[x][y] = shark
+        
+        # Placement des poissons
+        for i in range(num_sharks, total_entities):
+            x, y = all_positions[i]
+            fish = Fish(grid=self, x=x, y=y, reproduction_time=5, alive=True)
+            self.cells[x][y] = fish
 
-        for i, pos in enumerate(positions):
-            row, col = divmod(pos, self.point_y)
-            if i < num_sharks:
-                shark = Shark(grid=self, x=row, y=col, shark_energy=15, shark_reproduction_time=3, shark_starvation_time=5)
-                self.cells[row][col] = shark
-            else:
-                fish = Fish(x=row, y=col, reproduction_time=5, alive=True)
-                self.cells[row][col] = fish
+        # Vérification du nombre d'entités placées
+        current_fish, current_sharks = self.count_entities()
+        print(f"Initialisation : {current_fish} poissons et {current_sharks} requins")
 
     def empty(self, x, y):
-        """Vérifie si une cellule est vide."""
+        """Vérifie si une cellule est vide et dans les limites de la grille."""
         return 0 <= x < self.point_x and 0 <= y < self.point_y and self.cells[x][y] is None
 
     def __str__(self):
-        """Retourne une représentation textuelle de la grille."""
+        """Retourne une représentation textuelle de la grille avec des emojis."""
         grid_representation = ""
         for row in self.cells:
             row_rep = ""
@@ -63,61 +76,54 @@ class Grid:
         return grid_representation
 
     def move_entity(self, entity, x, y, nx, ny, already_moved):
-        """Déplace une entité sur la grille."""
-        self.cells[nx][ny] = entity
+        """Déplace une entité d'une position à une autre sur la grille."""
+        self.cells[nx][ny] = self.cells[x][y]
+        print(f"Déplacement de {self.cells[x][y]} de ({x}, {y}) à ({nx}, {ny})")
         self.cells[x][y] = None
         entity.x, entity.y = nx, ny
         already_moved.add((nx, ny))
 
-    def reproduce_entity(self, entity, x, y):
-        """Permet la reproduction d'une entité sur une case vide."""
-        baby = entity.reproduce()
-        if baby:
-            empty_spots = self.get_empty_neighbors(x, y)
-            if empty_spots:
-                bx, by = random.choice(empty_spots)
-                baby.x, baby.y = bx, by
-                self.cells[bx][by] = baby
-
     def count_entities(self):
-        """Compte le nombre de requins et de poissons."""
-        fish_count = sum(isinstance(cell, Fish) for row in self.cells for cell in row)
+        """Compte le nombre de poissons et de requins dans la grille."""
+        fish_count = sum(isinstance(cell, Fish) and not isinstance(cell, Shark) for row in self.cells for cell in row)
         shark_count = sum(isinstance(cell, Shark) for row in self.cells for cell in row)
         return fish_count, shark_count
 
     def update_info(self, label):
-        """Met à jour les informations affichées."""
+        """Met à jour les informations affichées dans l'interface."""
         fish_count, shark_count = self.count_entities()
         label.config(text=f"Tour : {turn_count}   🐟 Poissons : {fish_count}   🦈 Requins : {shark_count}")
 
     def draw_grid_emojis(self):
-        """Met à jour l'affichage des entités."""
+        """Dessine la grille avec des emojis dans l'interface graphique."""
         for x in range(self.point_x):
             for y in range(self.point_y):
-                entity = self.cells[x][y]
-                emoji = "⬜"
-                if isinstance(entity, Shark):
-                    emoji = "🦈"
-                elif isinstance(entity, Fish):
-                    emoji = "🐟"
-
-                if self.cell_labels[x][y]:  
-                    self.cell_labels[x][y].config(text=emoji)  # Mise à jour affichage
+                cell = self.cells[x][y]
+                if cell is None:
+                    self.cell_labels[x][y].config(text="🌊")
+                elif isinstance(cell, Shark):
+                    self.cell_labels[x][y].config(text="🦈")
+                elif isinstance(cell, Fish) and not isinstance(cell, Shark):
+                    self.cell_labels[x][y].config(text="🐟")
 
     def simulate_step(self, info_label):
         """Exécute un tour de simulation."""
         global turn_count
-        already_moved = set()
-        entities = [self.cells[x][y] for x in range(self.point_x) for y in range(self.point_y) if isinstance(self.cells[x][y], (Shark, Fish))]
-        random.shuffle(entities)
+        already_moved = set()  # Ensemble des entités déjà déplacées dans ce tour
+        # Récupération de toutes les entités (poissons et requins)
+        entities = [self.cells[x][y] for x in range(self.point_x) for y in range(self.point_y) 
+                   if isinstance(self.cells[x][y], Shark) or (isinstance(self.cells[x][y], Fish) and not isinstance(self.cells[x][y], Shark))]
+        random.shuffle(entities)  # Mélange pour un ordre aléatoire
 
         for entity in entities:
+            if entity is None:
+                continue
             x, y = entity.x, entity.y
             if (x, y) in already_moved:
                 continue
             if isinstance(entity, Shark):
                 entity.handle_shark(x, y, already_moved)
-            elif isinstance(entity, Fish):
+            elif isinstance(entity, Fish) and not isinstance(entity, Shark):
                 entity.handle_fish(self, x, y, already_moved)
 
         turn_count += 1
@@ -125,7 +131,7 @@ class Grid:
         self.update_info(info_label)
 
     def run_simulation(self, root, button, info_label):
-        """Lance la simulation en boucle."""
+        """Lance la simulation en boucle avec un délai de 500ms entre chaque tour."""
         if simulation_running:
             self.simulate_step(info_label)
             root.after(500, self.run_simulation, root, button, info_label)
@@ -141,7 +147,7 @@ class Grid:
             button.config(text="Lancer")
         
     def get_empty_neighbors(self, x, y):
-        """Retourne les cellules vides adjacentes."""
+        """Retourne les cellules vides adjacentes à une position donnée."""
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
         return [(nx, ny) for dx, dy in directions
                 if 0 <= (nx := x + dx) < self.point_x and 0 <= (ny := y + dy) < self.point_y
