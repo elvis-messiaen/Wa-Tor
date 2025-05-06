@@ -26,12 +26,14 @@ class Fish:
         self.alive = False
         
     def remove_fish(self, grid: Any) -> None:
-        """Supprime le poisson de la grille.
-        
+        """Supprime le poisson ou le requin de la grille.
+
         Args:
             grid (Any): Grille de simulation
         """
         grid.cells[self.x][self.y] = None
+        self.alive = False 
+
         
     def step(self) -> None:
         """Fait vieillir le poisson d'un tour."""

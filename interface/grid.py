@@ -58,7 +58,7 @@ class Grid:
         
         for i in range(num_sharks):
             x, y = all_positions[i]
-            shark = Shark(grid=self, x=x, y=y, shark_energy=2, shark_reproduction_time=5)
+            shark = Shark(grid=self, x=x, y=y, shark_energy=30, shark_reproduction_time=5)
             self.cells[x][y] = shark
         
         for i in range(num_sharks, total_entities):
