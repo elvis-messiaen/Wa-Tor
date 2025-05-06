@@ -34,9 +34,10 @@ class Shark(Fish):
         Args:
             fish (Fish): Le poisson à manger
         """
-        self.shark_energy += 2
-        fish.die()
-        fish.remove_fish(self.grid)
+        self.shark_energy += 15
+        if fish.alive:
+            print(fish.alive)
+            fish.remove_fish(self.grid)
 
     def step(self) -> None:
         """Fait vieillir le requin et diminue son énergie."""
@@ -72,7 +73,7 @@ class Shark(Fish):
             self.eat(self.grid.cells[nx][ny])
             self.grid.move_entity(self, x, y, nx, ny, already_moved)
         else:
-            self.shark_energy -= 500
+            self.shark_energy -= 5
             empty = self.grid.get_empty_neighbors(x, y)
             if empty:
                 nx, ny = random.choice(empty)
@@ -97,6 +98,6 @@ class Shark(Fish):
         empty = self.get_empty_neighbors(grid, x, y)
         if empty:
             nx, ny = random.choice(empty)
-            baby = Shark(grid, nx, ny, shark_energy=15,
+            baby = Shark(grid, nx, ny, shark_energy=5,
                         shark_reproduction_time=self.shark_reproduction_time)
             grid.cells[nx][ny] = baby
