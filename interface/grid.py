@@ -135,16 +135,16 @@ class Grid:
         label.config(text=f"Tour : {turn_count}   🐟 Poissons : {fish_count}   🦈 Requins : {shark_count}")
 
     def draw_grid_emojis(self) -> None:
-        """Dessine la grille avec des emojis dans l'interface graphique."""
+        """Dessine la grille avec des emojis colorés dans l'interface graphique."""
         for x in range(self.point_x):
             for y in range(self.point_y):
                 cell = self.cells[x][y]
                 if cell is None:
-                    self.cell_labels[x][y].config(text="🌊")
+                    self.cell_labels[x][y].config(text="🌊", fg="#1E90FF", bg="white")  # Bleu océan pour l'emoji vague
                 elif isinstance(cell, Shark):
-                    self.cell_labels[x][y].config(text="🦈")
+                    self.cell_labels[x][y].config(text="🦈", fg="#FF4500", bg="white")  # Rouge-Orange pour l'emoji requin
                 elif isinstance(cell, Fish) and not isinstance(cell, Shark):
-                    self.cell_labels[x][y].config(text="🐟")
+                    self.cell_labels[x][y].config(text="🐟", fg="#32CD32", bg="white")  # Vert pour l'emoji poisson
 
     def simulate_step(self, info_label: Any) -> None:
         """Exécute un tour de simulation.

@@ -5,6 +5,7 @@ from typing import List, Any
 from interface.grid import Grid
 from aquatic.fish import Fish
 from aquatic.shark import Shark
+from interface.history_display import display_simulation_history
 
 # Dimensions de la grille
 width: int = 20
@@ -38,7 +39,8 @@ def main() -> None:
     for x in range(width):
         row: List[Any] = []
         for y in range(height):
-            lbl: tk.Label = tk.Label(grid_frame, text="⬜", font=("Arial", 16), width=2, height=1)
+            lbl: tk.Label = tk.Label(grid_frame, text="", font=("Arial", 16), 
+                                   width=3, height=1, relief="solid", borderwidth=1)
             lbl.grid(row=y, column=x)
             row.append(lbl)
         cell_labels.append(row)
@@ -70,8 +72,8 @@ def main() -> None:
     reset_button.pack(side=tk.LEFT, padx=5)
 
     # Bouton pour afficher l'historique
-    history_button: tk.Button = tk.Button(button_frame, text="Historique",
-                                        command=lambda: grid_instance.history.show_history_window())
+    history_button: tk.Button = tk.Button(button_frame, text="Historique CSV",
+                                        command=display_simulation_history)
     history_button.pack(side=tk.LEFT, padx=5)
 
     # Mise à jour initiale de l'affichage
