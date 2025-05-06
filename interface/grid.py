@@ -2,6 +2,7 @@ import random
 from typing import List, Set, Tuple, Optional, Any
 from aquatic.fish import Fish
 from aquatic.shark import Shark
+from history import SimulationHistory
 
 # Variables globales pour la gestion de la grille et de la simulation
 _grid_instance: Optional['Grid'] = None  # Instance unique de la grille (singleton)
@@ -37,6 +38,7 @@ class Grid:
         self.point_y: int = point_y
         self.cells: List[List[Optional[Any]]] = [[None for _ in range(point_y)] for _ in range(point_x)]
         self.cell_labels: Optional[List[List[Any]]] = None
+        self.history: SimulationHistory = SimulationHistory()  # Instance de l'historique
 
     def set_cell_labels(self, labels: List[List[Any]]) -> None:
         """Définit les labels de la grille pour l'interface graphique.
@@ -170,6 +172,21 @@ class Grid:
         turn_count += 1
         self.draw_grid_emojis()
         self.update_info(info_label)
+        
+        # Vérifier si la simulation est terminée (plus de poissons ET plus de requins)
+        fish_count, shark_count = self.count_entities()
+        if fish_count == 0 and shark_count == 0:
+            global simulation_running
+            simulation_running = False
+            # Enregistrer les résultats dans l'historique à la fin de la partie
+            self.history.add_simulation(turn_count, fish_count, shark_count)
+            # Réinitialiser la grille pour une nouvelle partie
+            self.cells = [[None for _ in range(self.point_y)] for _ in range(self.point_x)]
+            self.populate_grid()
+            self.draw_grid_emojis()
+            turn_count = 0  # Réinitialiser le compteur
+            return False
+        return True
 
     def run_simulation(self, root: Any, button: Any, info_label: Any) -> None:
         """Lance la simulation en boucle avec un délai de 500ms entre chaque tour.
@@ -180,7 +197,10 @@ class Grid:
             info_label (Any): Label d'information
         """
         if simulation_running:
-            self.simulate_step(info_label)
+            if not self.simulate_step(info_label):
+                # Si la simulation est terminée
+                button.config(text="Lancer")
+                return
             root.after(500, self.run_simulation, root, button, info_label)
 
     def toggle_simulation(self, root: Any, button: Any, info_label: Any) -> None:
@@ -213,3 +233,12 @@ class Grid:
         return [(nx, ny) for dx, dy in directions
                 if 0 <= (nx := x + dx) < self.point_x and 0 <= (ny := y + dy) < self.point_y
                 and self.cells[nx][ny] is None]
+
+    def reset_simulation(self) -> None:
+        """Réinitialise la simulation en vidant la grille et en la repeuplant."""
+        global turn_count, simulation_running
+        turn_count = 0
+        simulation_running = False
+        self.cells = [[None for _ in range(self.point_y)] for _ in range(self.point_x)]
+        self.populate_grid()
+        self.draw_grid_emojis()
