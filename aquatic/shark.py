@@ -36,7 +36,6 @@ class Shark(Fish):
         """
         self.shark_energy += 15
         if fish.alive:
-            print(fish.alive)
             fish.remove_fish(self.grid)
 
     def step(self) -> None:
@@ -55,9 +54,13 @@ class Shark(Fish):
             List[Tuple[int, int]]: Liste des coordonnées des poissons adjacents
         """
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-        return [(nx, ny) for dx, dy in directions
-                if 0 <= (nx := x + dx) < self.grid.point_x and 0 <= (ny := y + dy) < self.grid.point_y
-                and isinstance(self.grid.cells[nx][ny], Fish) and not isinstance(self.grid.cells[nx][ny], Shark)]
+        neighbors = []
+        for dx, dy in directions:
+            nx, ny = self.grid.get_toroidal_coords(x + dx, y + dy)
+            cell = self.grid.cells[nx][ny]
+            if isinstance(cell, Fish) and not isinstance(cell, Shark):
+                neighbors.append((nx, ny))
+        return neighbors
     
     def handle_shark(self, x: int, y: int, already_moved: Set[Tuple[int, int]]) -> None:
         """Gère le comportement du requin pendant un tour de simulation.

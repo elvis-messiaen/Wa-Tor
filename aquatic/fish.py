@@ -51,9 +51,12 @@ class Fish:
             List[Tuple[int, int]]: Liste des coordonnées des cellules vides adjacentes
         """
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-        return [(nx, ny) for dx, dy in directions
-                if 0 <= (nx := x + dx) < grid.point_x and 0 <= (ny := y + dy) < grid.point_y
-                and grid.cells[nx][ny] is None]
+        neighbors = []
+        for dx, dy in directions:
+            nx, ny = grid.get_toroidal_coords(x + dx, y + dy)
+            if grid.cells[nx][ny] is None:
+                neighbors.append((nx, ny))
+        return neighbors
     
     def position(self) -> Tuple[int, int]:
         """Retourne la position actuelle du poisson.
