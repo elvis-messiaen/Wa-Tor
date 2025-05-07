@@ -24,15 +24,7 @@ SHARK_INITIAL_ENERGY = 30
 SHARK_ENERGY_FROM_FISH = 15
 
 def calculate_cell_size(grid_width: int, grid_height: int) -> int:
-    """Calcule la taille optimale des cellules en fonction de la taille de la grille.
-    
-    Args:
-        grid_width (int): Largeur de la grille
-        grid_height (int): Hauteur de la grille
-        
-    Returns:
-        int: Taille optimale des cellules en pixels
-    """
+    """Calcule la taille optimale des cellules en fonction de la taille de la grille."""
     available_width = WINDOW_WIDTH - 2 * MARGIN - 20  # 20 pour la scrollbar
     available_height = WINDOW_HEIGHT - CONTROL_HEIGHT - 2 * MARGIN - 20  # 20 pour la scrollbar
     
@@ -51,19 +43,11 @@ grid_instance.populate_grid(
 cell_labels: List[List[Any]] = []
 
 def create_control_panel(root: tk.Tk, main_frame: tk.Frame) -> tuple[tk.Label, tk.Button, tk.Button, tk.Button]:
-    """Crée le panneau de contrôle avec les informations et les boutons.
-    
-    Args:
-        root (tk.Tk): Fenêtre principale
-        main_frame (tk.Frame): Cadre principal
-        
-    Returns:
-        tuple: Label d'information et boutons de contrôle
-    """
+    """Crée le panneau de contrôle avec les informations et les boutons."""
     control_frame = tk.Frame(main_frame, bg='white')
     control_frame.pack(side=tk.TOP, fill=tk.X, padx=MARGIN, pady=MARGIN)
 
-    info_label = tk.Label(control_frame, text="", font=("Arial", 12), bg='white')
+    info_label = tk.Label(control_frame, text="", font=("Arial", 12))
     info_label.pack(side=tk.LEFT, padx=5)
 
     button_frame = tk.Frame(control_frame, bg='white')
@@ -84,18 +68,11 @@ def create_control_panel(root: tk.Tk, main_frame: tk.Frame) -> tuple[tk.Label, t
     return info_label, step_button, toggle_button, history_button
 
 def create_grid_display(main_frame: tk.Frame) -> tuple[tk.Canvas, tk.Frame]:
-    """Crée l'affichage de la grille avec scrollbars.
-    
-    Args:
-        main_frame (tk.Frame): Cadre principal
-        
-    Returns:
-        tuple: Canvas et cadre de la grille
-    """
+    """Crée l'affichage de la grille avec scrollbars et ajuste la taille correctement."""
     grid_container = tk.Frame(main_frame, bg='white')
     grid_container.pack(side=tk.TOP, expand=True, fill=tk.BOTH, padx=MARGIN, pady=MARGIN)
 
-    canvas = tk.Canvas(grid_container, bg='white')
+    canvas = tk.Canvas(grid_container, bg='white', width=WINDOW_WIDTH, height=WINDOW_HEIGHT - CONTROL_HEIGHT)
     scrollbar_y = tk.Scrollbar(grid_container, orient="vertical", command=canvas.yview)
     scrollbar_x = tk.Scrollbar(grid_container, orient="horizontal", command=canvas.xview)
     
@@ -105,20 +82,14 @@ def create_grid_display(main_frame: tk.Frame) -> tuple[tk.Canvas, tk.Frame]:
     scrollbar_x.pack(side=tk.BOTTOM, fill=tk.X)
     canvas.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
 
-    grid_frame = tk.Frame(canvas, bg='white')
+    # Création du grid_frame avec une taille fixe
+    grid_frame = tk.Frame(canvas, bg='white', width=WINDOW_WIDTH - 2 * MARGIN, height=WINDOW_HEIGHT - CONTROL_HEIGHT - 2 * MARGIN)
     canvas.create_window((0, 0), window=grid_frame, anchor="nw")
 
     return canvas, grid_frame
 
 def create_cells(grid_frame: tk.Frame) -> List[List[Any]]:
-    """Crée les cellules de la grille.
-    
-    Args:
-        grid_frame (tk.Frame): Cadre de la grille
-        
-    Returns:
-        List[List[Any]]: Matrice des labels des cellules
-    """
+    """Crée les cellules de la grille avec une taille ajustée."""
     cell_size = calculate_cell_size(width, height)
     font_size = max(4, cell_size // 2)
     labels = []
@@ -126,11 +97,8 @@ def create_cells(grid_frame: tk.Frame) -> List[List[Any]]:
     for x in range(width):
         row = []
         for y in range(height):
-            lbl = tk.Label(grid_frame, text="", 
-                          font=("Arial", font_size),
-                          width=2, height=1,
-                          relief="solid", borderwidth=1,
-                          bg='white')
+            lbl = tk.Label(grid_frame, text="", font=("Arial", font_size),
+                          width=2, height=1, relief="solid", borderwidth=1, bg='white')
             lbl.grid(row=y, column=x, padx=0, pady=0)
             row.append(lbl)
         labels.append(row)
@@ -161,9 +129,11 @@ def main() -> None:
     # Création des cellules
     cell_labels = create_cells(grid_frame)
 
-    # Configuration finale
+    # Ajuste la taille du `Canvas` et `grid_frame`
     grid_frame.update_idletasks()
     canvas.configure(scrollregion=canvas.bbox("all"))
+
+    # Associe les cellules à la grille
     grid_instance.set_cell_labels(cell_labels)
     grid_instance.draw_grid_emojis()
     grid_instance.update_info(info_label)
@@ -172,4 +142,4 @@ def main() -> None:
     root.mainloop()
 
 if __name__ == "__main__":
-    main() 
+    main()
