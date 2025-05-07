@@ -66,13 +66,8 @@ def main() -> None:
     toggle_button.config(command=lambda: grid_instance.toggle_simulation(root, toggle_button, info_label))
     toggle_button.pack(side=tk.LEFT, padx=5)
 
-    # Bouton pour réinitialiser la simulation
-    reset_button: tk.Button = tk.Button(button_frame, text="Réinitialiser",
-                                      command=lambda: grid_instance.reset_simulation())
-    reset_button.pack(side=tk.LEFT, padx=5)
-
     # Bouton pour afficher l'historique
-    history_button: tk.Button = tk.Button(button_frame, text="Historique CSV",
+    history_button: tk.Button = tk.Button(button_frame, text="Historique",
                                         command=display_simulation_history)
     history_button.pack(side=tk.LEFT, padx=5)
 

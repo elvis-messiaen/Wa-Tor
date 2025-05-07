@@ -1,8 +1,11 @@
 import random
+import os
+import csv
 from typing import List, Set, Tuple, Optional, Any
 from aquatic.fish import Fish
 from aquatic.shark import Shark
 from history import SimulationHistory
+from datetime import datetime
 
 # Variables globales pour la gestion de la grille et de la simulation
 _grid_instance: Optional['Grid'] = None  # Instance unique de la grille (singleton)
@@ -178,8 +181,28 @@ class Grid:
         if fish_count == 0 and shark_count == 0:
             global simulation_running
             simulation_running = False
-            # Enregistrer les résultats dans l'historique à la fin de la partie
-            self.history.add_simulation(turn_count, fish_count, shark_count)
+            
+            # Sauvegarder l'historique dans le CSV
+            history_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'simulation_history.csv')
+            try:
+                # Vérifier si le fichier existe déjà
+                file_exists = os.path.exists(history_file)
+                
+                with open(history_file, 'a', newline='', encoding='utf-8') as f:
+                    writer = csv.writer(f)
+                    # Écrire l'en-tête si le fichier est nouveau
+                    if not file_exists:
+                        writer.writerow(['date', 'chronons', 'fish_count', 'shark_count'])
+                    # Écrire les données
+                    writer.writerow([
+                        datetime.now().isoformat(),
+                        turn_count,
+                        fish_count,
+                        shark_count
+                    ])
+            except Exception as e:
+                print(f"Erreur lors de la sauvegarde de l'historique : {e}")
+            
             # Réinitialiser la grille pour une nouvelle partie
             self.cells = [[None for _ in range(self.point_y)] for _ in range(self.point_x)]
             self.populate_grid()
