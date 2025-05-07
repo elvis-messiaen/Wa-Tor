@@ -2,48 +2,61 @@ import tkinter as tk
 from tkinter import ttk
 from datetime import datetime
 from typing import List, Dict
-import json
+import csv
 import os
 
 class SimulationHistory:
     def __init__(self):
         self.simulations: List[Dict] = []
-        self.history_file = "simulation_history.json"
+        self.history_file = "simulation_history.csv"
         self.load_history()
     
     def add_simulation(self, chronons: int, fish_count: int, shark_count: int):
-        """Ajoute une nouvelle simulation à l'historique et sauvegarde dans le fichier"""
-        self.simulations.append({
+        """Ajoute une nouvelle simulation à l'historique"""
+        simulation = {
             'date': datetime.now().isoformat(),
             'chronons': chronons,
             'fish_count': fish_count,
             'shark_count': shark_count
-        })
+        }
+        self.simulations.append(simulation)
         self.save_history()
     
     def save_history(self):
-        """Sauvegarde l'historique dans un fichier JSON"""
-        with open(self.history_file, 'w', encoding='utf-8') as f:
-            json.dump(self.simulations, f, ensure_ascii=False, indent=2)
+        """Sauvegarde l'historique dans un fichier CSV"""
+        try:
+            with open(self.history_file, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=['date', 'chronons', 'fish_count', 'shark_count'])
+                writer.writeheader()
+                writer.writerows(self.simulations)
+        except Exception as e:
+            print(f"Erreur lors de la sauvegarde de l'historique : {e}")
     
     def load_history(self):
-        """Charge l'historique depuis le fichier JSON"""
+        """Charge l'historique depuis le fichier CSV"""
         if os.path.exists(self.history_file):
             try:
-                with open(self.history_file, 'r', encoding='utf-8') as f:
-                    self.simulations = json.load(f)
-            except json.JSONDecodeError:
+                with open(self.history_file, 'r', newline='', encoding='utf-8') as f:
+                    reader = csv.DictReader(f)
+                    self.simulations = list(reader)
+            except Exception as e:
+                print(f"Erreur lors du chargement de l'historique : {e}")
                 self.simulations = []
     
     def show_history_window(self):
         """Affiche une fenêtre avec l'historique des simulations"""
+        # Créer une nouvelle fenêtre
         history_window = tk.Toplevel()
         history_window.title("Historique des Simulations")
         history_window.geometry("800x600")
         
+        # Créer un cadre pour le tableau
+        frame = ttk.Frame(history_window)
+        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
         # Création du tableau
         columns = ('Date', 'Heure', 'Chronons', 'Poissons', 'Requins')
-        tree = ttk.Treeview(history_window, columns=columns, show='headings')
+        tree = ttk.Treeview(frame, columns=columns, show='headings')
         
         # Configuration des colonnes
         for col in columns:
@@ -52,19 +65,22 @@ class SimulationHistory:
         
         # Ajout des données
         for sim in self.simulations:
-            date_obj = datetime.fromisoformat(sim['date'])
-            date = date_obj.strftime('%Y-%m-%d')
-            time = date_obj.strftime('%H:%M')
-            tree.insert('', 'end', values=(
-                date,
-                time,
-                sim['chronons'],
-                sim['fish_count'],
-                sim['shark_count']
-            ))
+            try:
+                date_obj = datetime.fromisoformat(sim['date'])
+                date = date_obj.strftime('%Y-%m-%d')
+                time = date_obj.strftime('%H:%M')
+                tree.insert('', 'end', values=(
+                    date,
+                    time,
+                    sim['chronons'],
+                    sim['fish_count'],
+                    sim['shark_count']
+                ))
+            except Exception as e:
+                print(f"Erreur lors de l'affichage d'une simulation : {e}")
         
         # Ajout d'une barre de défilement
-        scrollbar = ttk.Scrollbar(history_window, orient=tk.VERTICAL, command=tree.yview)
+        scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tree.yview)
         tree.configure(yscrollcommand=scrollbar.set)
         
         # Placement des éléments
@@ -78,5 +94,9 @@ class SimulationHistory:
             for item in tree.get_children():
                 tree.delete(item)
         
-        clear_button = tk.Button(history_window, text="Effacer l'historique", command=clear_history)
-        clear_button.pack(side=tk.BOTTOM, pady=10) 
+        # Créer un cadre pour le bouton
+        button_frame = ttk.Frame(history_window)
+        button_frame.pack(fill=tk.X, padx=10, pady=5)
+        
+        clear_button = ttk.Button(button_frame, text="Effacer l'historique", command=clear_history)
+        clear_button.pack(side=tk.RIGHT) 
