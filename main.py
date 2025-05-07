@@ -40,8 +40,8 @@ def main() -> None:
         row: List[Any] = []
         for y in range(height):
             lbl: tk.Label = tk.Label(grid_frame, text="", font=("Arial", 16), 
-                                   width=3, height=1, relief="solid", borderwidth=1)
-            lbl.grid(row=y, column=x)
+                                   width=2, height=1, relief="solid", borderwidth=1)
+            lbl.grid(row=y, column=x, padx=1, pady=1)
             row.append(lbl)
         cell_labels.append(row)
 

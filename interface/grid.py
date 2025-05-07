@@ -113,10 +113,12 @@ class Grid:
             ny (int): Nouvelle coordonnée y
             already_moved (Set[Tuple[int, int]]): Ensemble des positions déjà déplacées
         """
-        self.cells[nx][ny] = self.cells[x][y]
+        # Convertir les nouvelles coordonnées en coordonnées toroidales
+        toroidal_nx, toroidal_ny = self.get_toroidal_coords(nx, ny)
+        self.cells[toroidal_nx][toroidal_ny] = self.cells[x][y]
         self.cells[x][y] = None
-        entity.x, entity.y = nx, ny
-        already_moved.add((nx, ny))
+        entity.x, entity.y = toroidal_nx, toroidal_ny
+        already_moved.add((toroidal_nx, toroidal_ny))
 
     def count_entities(self) -> Tuple[int, int]:
         """Compte le nombre de poissons et de requins dans la grille.
@@ -242,8 +244,28 @@ class Grid:
         else:
             button.config(text="Lancer")
         
+    def get_toroidal_coords(self, x: int, y: int) -> Tuple[int, int]:
+        """Retourne les coordonnées toroidales pour une position donnée.
+        
+        Args:
+            x (int): Coordonnée x
+            y (int): Coordonnée y
+            
+        Returns:
+            Tuple[int, int]: Coordonnées toroidales (x, y)
+        """
+        # Gestion des coordonnées négatives
+        x = x % self.point_x
+        y = y % self.point_y
+        # Si le résultat est négatif, on ajoute la taille de la grille
+        if x < 0:
+            x += self.point_x
+        if y < 0:
+            y += self.point_y
+        return (x, y)
+
     def get_empty_neighbors(self, x: int, y: int) -> List[Tuple[int, int]]:
-        """Retourne les cellules vides adjacentes à une position donnée.
+        """Retourne les cellules vides adjacentes à une position donnée en utilisant une grille toroidale.
         
         Args:
             x (int): Coordonnée x de la position
@@ -253,9 +275,8 @@ class Grid:
             List[Tuple[int, int]]: Liste des coordonnées des cellules vides adjacentes
         """
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-        return [(nx, ny) for dx, dy in directions
-                if 0 <= (nx := x + dx) < self.point_x and 0 <= (ny := y + dy) < self.point_y
-                and self.cells[nx][ny] is None]
+        return [(x, y) for dx, dy in directions
+                if self.cells[self.get_toroidal_coords(x + dx, y + dy)[0]][self.get_toroidal_coords(x + dx, y + dy)[1]] is None]
 
     def reset_simulation(self) -> None:
         """Réinitialise la simulation en vidant la grille et en la repeuplant."""
