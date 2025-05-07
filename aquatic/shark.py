@@ -27,6 +27,7 @@ class Shark(Fish):
         Shark.compteur_id_requin += 1
         self.shark_energy: int = shark_energy
         self.shark_reproduction_time: int = shark_reproduction_time
+        self.energy_from_fish: int = 15  # Énergie gagnée en mangeant un poisson
     
     def eat(self, fish: Fish) -> None:
         """Fait manger un poisson au requin, augmentant son énergie.
@@ -34,7 +35,7 @@ class Shark(Fish):
         Args:
             fish (Fish): Le poisson à manger
         """
-        self.shark_energy += 15
+        self.shark_energy += self.energy_from_fish
         if fish.alive:
             fish.remove_fish(self.grid)
 
@@ -72,6 +73,7 @@ class Shark(Fish):
         """
         fish_neighbors = self.get_fish_neighbors(x, y)
         if fish_neighbors:
+            # Choisir aléatoirement un poisson parmi les voisins
             nx, ny = random.choice(fish_neighbors)
             self.eat(self.grid.cells[nx][ny])
             self.grid.move_entity(self, x, y, nx, ny, already_moved)

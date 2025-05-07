@@ -4,22 +4,26 @@ from typing import List, Set, Tuple, Optional, Any
 class Fish:
     """Classe représentant un poisson dans la simulation Wa-Tor."""
     
-    def __init__(self, grid: Any, x: int, y: int, reproduction_time: int, alive: bool = True) -> None:
+    compteur_id_poisson: int = 0  # Compteur statique pour les identifiants uniques des poissons
+
+    def __init__(self, grid: Any, x: int, y: int, reproduction_time: int = 5, alive: bool = True) -> None:
         """Initialise un poisson avec ses caractéristiques.
         
         Args:
             grid (Any): Référence à la grille de simulation
             x (int): Position x initiale
             y (int): Position y initiale
-            reproduction_time (int): Temps nécessaire pour la reproduction
+            reproduction_time (int, optional): Temps nécessaire pour la reproduction. Defaults to 5.
             alive (bool, optional): État de vie du poisson. Defaults to True.
         """
         self.grid: Any = grid
         self.x: int = x
         self.y: int = y
+        self.age: int = 0
         self.reproduction_time: int = reproduction_time
         self.alive: bool = alive
-        self.age: int = 0
+        self.id: int = Fish.compteur_id_poisson  # Attribution d'un ID unique
+        Fish.compteur_id_poisson += 1  # Incrémentation du compteur
         
     def die(self) -> None:
         """Marque le poisson comme mort."""
@@ -95,5 +99,7 @@ class Fish:
         empty = self.get_empty_neighbors(grid, x, y)
         if empty:
             nx, ny = random.choice(empty)
-            grid.cells[nx][ny] = Fish(grid, nx, ny, self.reproduction_time)
-            self.age = 0
+            baby = Fish(grid, nx, ny, reproduction_time=self.reproduction_time)
+            # Le bébé a son propre ID unique (géré dans __init__)
+            grid.cells[nx][ny] = baby
+            self.age = 0  # Réinitialisation de l'âge du parent après reproduction

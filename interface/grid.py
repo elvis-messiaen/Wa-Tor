@@ -51,8 +51,15 @@ class Grid:
         """
         self.cell_labels = labels
 
-    def populate_grid(self) -> None:
-        """Remplit la grille avec des requins et des poissons selon des proportions définies."""
+    def populate_grid(self, fish_reproduction_time: int = 5, shark_reproduction_time: int = 5,
+                     shark_initial_energy: int = 30) -> None:
+        """Remplit la grille avec des requins et des poissons selon des proportions définies.
+        
+        Args:
+            fish_reproduction_time (int): Temps nécessaire pour la reproduction des poissons
+            shark_reproduction_time (int): Temps nécessaire pour la reproduction des requins
+            shark_initial_energy (int): Énergie initiale des requins
+        """
         total_cells: int = self.point_x * self.point_y
         num_sharks: int = int(total_cells * 0.1)  # 10% de requins
         num_fish: int = int(total_cells * 0.7)    # 70% de poissons
@@ -63,12 +70,13 @@ class Grid:
         
         for i in range(num_sharks):
             x, y = all_positions[i]
-            shark = Shark(grid=self, x=x, y=y, shark_energy=30, shark_reproduction_time=5)
+            shark = Shark(grid=self, x=x, y=y, shark_energy=shark_initial_energy, 
+                         shark_reproduction_time=shark_reproduction_time)
             self.cells[x][y] = shark
         
         for i in range(num_sharks, total_entities):
             x, y = all_positions[i]
-            fish = Fish(grid=self, x=x, y=y, reproduction_time=5, alive=True)
+            fish = Fish(grid=self, x=x, y=y, reproduction_time=fish_reproduction_time, alive=True)
             self.cells[x][y] = fish
 
     def empty(self, x: int, y: int) -> bool:
@@ -113,6 +121,10 @@ class Grid:
             ny (int): Nouvelle coordonnée y
             already_moved (Set[Tuple[int, int]]): Ensemble des positions déjà déplacées
         """
+        # Vérification de la validité des coordonnées de départ
+        if not (0 <= x < self.point_x and 0 <= y < self.point_y):
+            return
+            
         # Convertir les nouvelles coordonnées en coordonnées toroidales
         toroidal_nx, toroidal_ny = self.get_toroidal_coords(nx, ny)
         self.cells[toroidal_nx][toroidal_ny] = self.cells[x][y]
@@ -159,6 +171,8 @@ class Grid:
         """
         global turn_count
         already_moved: Set[Tuple[int, int]] = set()
+        
+        # Mélanger toutes les entités pour un ordre aléatoire
         entities = [self.cells[x][y] for x in range(self.point_x) for y in range(self.point_y) 
                    if isinstance(self.cells[x][y], Shark) or (isinstance(self.cells[x][y], Fish) and not isinstance(self.cells[x][y], Shark))]
         random.shuffle(entities)
@@ -178,32 +192,33 @@ class Grid:
         self.draw_grid_emojis()
         self.update_info(info_label)
         
+        # Sauvegarder l'historique à chaque tour
+        history_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'simulation_history.csv')
+        try:
+            # Vérifier si le fichier existe déjà
+            file_exists = os.path.exists(history_file)
+            
+            with open(history_file, 'a', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                # Écrire l'en-tête si le fichier est nouveau
+                if not file_exists:
+                    writer.writerow(['date', 'chronons', 'fish_count', 'shark_count'])
+                # Écrire les données
+                fish_count, shark_count = self.count_entities()
+                writer.writerow([
+                    datetime.now().isoformat(),
+                    turn_count,
+                    fish_count,
+                    shark_count
+                ])
+        except Exception as e:
+            print(f"Erreur lors de la sauvegarde de l'historique : {e}")
+        
         # Vérifier si la simulation est terminée (plus de poissons ET plus de requins)
         fish_count, shark_count = self.count_entities()
         if fish_count == 0 and shark_count == 0:
             global simulation_running
             simulation_running = False
-            
-            # Sauvegarder l'historique dans le CSV
-            history_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'simulation_history.csv')
-            try:
-                # Vérifier si le fichier existe déjà
-                file_exists = os.path.exists(history_file)
-                
-                with open(history_file, 'a', newline='', encoding='utf-8') as f:
-                    writer = csv.writer(f)
-                    # Écrire l'en-tête si le fichier est nouveau
-                    if not file_exists:
-                        writer.writerow(['date', 'chronons', 'fish_count', 'shark_count'])
-                    # Écrire les données
-                    writer.writerow([
-                        datetime.now().isoformat(),
-                        turn_count,
-                        fish_count,
-                        shark_count
-                    ])
-            except Exception as e:
-                print(f"Erreur lors de la sauvegarde de l'historique : {e}")
             
             # Réinitialiser la grille pour une nouvelle partie
             self.cells = [[None for _ in range(self.point_y)] for _ in range(self.point_x)]
@@ -254,15 +269,7 @@ class Grid:
         Returns:
             Tuple[int, int]: Coordonnées toroidales (x, y)
         """
-        # Gestion des coordonnées négatives
-        x = x % self.point_x
-        y = y % self.point_y
-        # Si le résultat est négatif, on ajoute la taille de la grille
-        if x < 0:
-            x += self.point_x
-        if y < 0:
-            y += self.point_y
-        return (x, y)
+        return (x % self.point_x, y % self.point_y)
 
     def get_empty_neighbors(self, x: int, y: int) -> List[Tuple[int, int]]:
         """Retourne les cellules vides adjacentes à une position donnée en utilisant une grille toroidale.
@@ -275,8 +282,12 @@ class Grid:
             List[Tuple[int, int]]: Liste des coordonnées des cellules vides adjacentes
         """
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-        return [(x, y) for dx, dy in directions
-                if self.cells[self.get_toroidal_coords(x + dx, y + dy)[0]][self.get_toroidal_coords(x + dx, y + dy)[1]] is None]
+        neighbors = []
+        for dx, dy in directions:
+            nx, ny = self.get_toroidal_coords(x + dx, y + dy)
+            if self.cells[nx][ny] is None:
+                neighbors.append((nx, ny))
+        return neighbors
 
     def reset_simulation(self) -> None:
         """Réinitialise la simulation en vidant la grille et en la repeuplant."""
